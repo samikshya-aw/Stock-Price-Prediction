@@ -286,6 +286,14 @@ with tab2:
     except:
         st.info("Regression metrics not available")
 
+    # LSTM metrics table (all stocks)
+    try:
+        lstm_table = get_json(f"{API}/metrics/lstm_table")
+        st.write("LSTM Metrics Table")
+        st.dataframe(pd.DataFrame(lstm_table))
+    except:
+        st.info("LSTM table not available")
+
     # Loss curves
     try:
         loss_data = get_json(f"{API}/metrics/loss/{stock}")

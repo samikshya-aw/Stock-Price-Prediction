@@ -46,6 +46,7 @@ End-to-end stock prediction project with:
   - Metrics: metrics/<STOCK>_loss.json, metrics/<STOCK>_error_trend.json
   - Metrics: metrics/<STOCK>_regression_metrics.json
   - Metrics: metrics/<STOCK>_classification_metrics.json, metrics/<STOCK>_classification_report.json
+  - Metrics: metrics/lstm_table.json
 
 LSTM workflow summary:
 - Close prices are cleaned and missing values are imputed.
@@ -76,6 +77,7 @@ FastAPI loads all models/scalers once at startup and serves endpoints per stock:
 - GET /metrics/regression/{stock}
 - GET /metrics/classification/{stock}
 - GET /metrics/classification/report/{stock}
+- GET /metrics/lstm_table
 - GET /forecast/30days/{stock}
   - Serves precomputed forecast if file exists.
 
@@ -83,7 +85,7 @@ FastAPI loads all models/scalers once at startup and serves endpoints per stock:
 - Calls the API and visualizes results.
 - Tabs:
   - Classification: prediction, ROC curve, confusion matrix, metrics, report.
-  - Regression: predicted next close vs last actual, curve plot, loss curves, error trend, metrics.
+  - Regression: predicted next close vs last actual, curve plot, loss curves, error trend, metrics, LSTM table.
   - 30-Day Forecast: plot and table (if forecast file exists).
 
 ## Data and Artifact Layout

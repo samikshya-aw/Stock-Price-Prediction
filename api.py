@@ -134,6 +134,11 @@ def classification_metrics(stock: str):
     return load_metrics_json(f"metrics/{stock}_classification_metrics.json")
 
 
+@app.get("/metrics/lstm_table")
+def lstm_metrics_table():
+    return load_metrics_json("metrics/lstm_table.json")
+
+
 # =====================================================
 # OPTIONAL — 30 DAY FORECAST
 # (only works if file exists)
