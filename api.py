@@ -1,107 +1,3 @@
-# from fastapi import FastAPI
-# from pydantic import BaseModel
-# import numpy as np
-# import pandas as pd
-# import joblib
-# from tensorflow.keras.models import load_model
-
-# app = FastAPI(title="Stock Prediction API")
-
-# STOCKS = ["CGH", "LICN", "NABIL", "NIFRA", "UPPER"]
-
-# # -----------------------------
-# # Load models once (IMPORTANT)
-# # -----------------------------
-# lstm_models = {}
-# scalers = {}
-# rf_models = {}
-
-# for stock in STOCKS:
-#     lstm_models[stock] = load_model(f"models/{stock}.keras", compile=False)
-#     scalers[stock] = joblib.load(f"scalers/{stock}_scaler.pkl")
-#     rf_models[stock] = joblib.load(f"models/{stock}_rf.pkl")
-
-
-# # -----------------------------
-# # Request schemas
-# # -----------------------------
-# class PriceRequest(BaseModel):
-#     stock: str
-#     last_60_prices: list
-
-
-# class DirectionRequest(BaseModel):
-#     stock: str
-#     features: list  # [close, ma5, ma10, volatility]
-
-
-# # -----------------------------
-# # Root endpoint (IMPORTANT)
-# # -----------------------------
-# @app.get("/")
-# def root():
-#     return {"message": "Stock Prediction API is running"}
-
-
-# # -----------------------------
-# # Regression: next-day price
-# # -----------------------------
-# @app.post("/predict/price")
-# def predict_price(req: PriceRequest):
-#     scaler = scalers[req.stock]
-#     model = models[req.stock]
-
-#     data = np.array(req.last_60_prices).reshape(-1, 1)
-#     scaled = scaler.transform(data)
-#     X = scaled.reshape(1, 60, 1)
-
-#     pred = model.predict(X)
-#     price = scaler.inverse_transform(pred)[0][0]
-
-#     return {
-#         "stock": req.stock,
-#         "predicted_price": float(price)
-#     }
-
-
-# # -----------------------------
-# # Classification: UP / DOWN
-# # -----------------------------
-# @app.post("/predict/direction")
-# def predict_direction(req: DirectionRequest):
-#     clf = rf_models[req.stock]
-#     prob = clf.predict_proba([req.features])[0][1]
-#     label = "UP" if prob >= 0.5 else "DOWN"
-
-#     return {
-#         "stock": req.stock,
-#         "direction": label,
-#         "confidence": float(prob)
-#     }
-
-
-# # -----------------------------
-# # ROC Curve data
-# # -----------------------------
-# @app.get("/metrics/roc/{stock}")
-# def get_roc(stock: str):
-#     df = pd.read_csv(f"metrics/{stock}_roc.csv")
-#     return {
-#         "fpr": df["fpr"].tolist(),
-#         "tpr": df["tpr"].tolist()
-#     }
-
-
-# # -----------------------------
-# # 30-day forecast
-# # -----------------------------
-# @app.get("/forecast/30days/{stock}")
-# def get_30day_forecast(stock: str):
-#     df = pd.read_csv(f"models/{stock}_30day_forecast.csv")
-#     return {
-#         "days": df["day"].tolist(),
-#         "prices": df["predicted_price"].tolist()
-#     }
 from fastapi import FastAPI, HTTPException
 import numpy as np
 import pandas as pd
@@ -125,6 +21,16 @@ for stock in STOCKS:
     lstm_models[stock] = load_model(f"models/{stock}_lstm.h5", compile=False)
     scalers[stock] = joblib.load(f"models/{stock}_scaler.pkl")
     rf_models[stock] = joblib.load(f"models/{stock}_rf.pkl")
+
+
+def load_metrics_json(path):
+    if not os.path.exists(path):
+        raise HTTPException(
+            status_code=404,
+            detail="Metrics file not found. Generate it in train.ipynb."
+        )
+    with open(path) as handle:
+        return json.load(handle)
 
 
 # -----------------------------
@@ -184,8 +90,7 @@ def predict_classification(stock: str):
 # =====================================================
 @app.get("/metrics/roc/{stock}")
 def get_roc(stock: str):
-    with open(f"metrics/{stock}_roc.json") as f:
-        return json.load(f)
+    return load_metrics_json(f"metrics/{stock}_roc.json")
 
 
 # =====================================================
@@ -193,8 +98,7 @@ def get_roc(stock: str):
 # =====================================================
 @app.get("/metrics/confusion/{stock}")
 def get_confusion(stock: str):
-    with open(f"metrics/{stock}_confusion.json") as f:
-        return json.load(f)
+    return load_metrics_json(f"metrics/{stock}_confusion.json")
 
 
 # =====================================================
@@ -202,8 +106,32 @@ def get_confusion(stock: str):
 # =====================================================
 @app.get("/metrics/regression_curve/{stock}")
 def regression_curve(stock: str):
-    with open(f"metrics/{stock}_regression_curve.json") as f:
-        return json.load(f)
+    return load_metrics_json(f"metrics/{stock}_regression_curve.json")
+
+
+@app.get("/metrics/error/{stock}")
+def regression_error(stock: str):
+    return load_metrics_json(f"metrics/{stock}_error_trend.json")
+
+
+@app.get("/metrics/loss/{stock}")
+def training_loss(stock: str):
+    return load_metrics_json(f"metrics/{stock}_loss.json")
+
+
+@app.get("/metrics/regression/{stock}")
+def regression_metrics(stock: str):
+    return load_metrics_json(f"metrics/{stock}_regression_metrics.json")
+
+
+@app.get("/metrics/classification/report/{stock}")
+def classification_report_data(stock: str):
+    return load_metrics_json(f"metrics/{stock}_classification_report.json")
+
+
+@app.get("/metrics/classification/{stock}")
+def classification_metrics(stock: str):
+    return load_metrics_json(f"metrics/{stock}_classification_metrics.json")
 
 
 # =====================================================

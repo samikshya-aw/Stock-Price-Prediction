@@ -133,6 +133,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 def load_api_url():
     env_url = os.getenv("API_URL")
@@ -158,6 +159,10 @@ def get_json(url, retries=5, delay=0.5):
             last_error = exc
             time.sleep(delay)
     raise last_error
+
+
+def apply_index_ticks(ax, max_ticks=8):
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=max_ticks, integer=True))
 STOCKS = ["CGH", "LICN", "NABIL", "NIFRA", "UPPER"]
 
 st.set_page_config(page_title="Stock Prediction System", layout="wide")
@@ -221,6 +226,23 @@ with tab1:
     except:
         st.info("Confusion matrix not available")
 
+    # Classification metrics summary
+    try:
+        cls_metrics = get_json(f"{API}/metrics/classification/{stock}")
+        st.write("Classification Metrics")
+        st.dataframe(pd.DataFrame([cls_metrics]))
+    except:
+        st.info("Classification metrics not available")
+
+    # Classification report
+    try:
+        cls_report = get_json(f"{API}/metrics/classification/report/{stock}")
+        report_df = pd.DataFrame(cls_report).T
+        st.write("Classification Report")
+        st.dataframe(report_df)
+    except:
+        st.info("Classification report not available")
+
 
 # =====================================================
 # REGRESSION TAB
@@ -247,14 +269,57 @@ with tab2:
         fig, ax = plt.subplots()
         ax.plot(df["actual"], label="Actual")
         ax.plot(df["predicted"], label="Predicted")
-        step = max(len(df) // 10, 1)
-        ax.set_xticks(range(0, len(df), step))
+        apply_index_ticks(ax)
+        ax.set_xlabel("Index")
         ax.legend()
         ax.set_title("Actual vs Predicted")
         st.pyplot(fig)
 
     except:
         st.info("Regression curve not available")
+
+    # Regression metrics
+    try:
+        reg_metrics = get_json(f"{API}/metrics/regression/{stock}")
+        st.write("Regression Metrics")
+        st.dataframe(pd.DataFrame([reg_metrics]))
+    except:
+        st.info("Regression metrics not available")
+
+    # Loss curves
+    try:
+        loss_data = get_json(f"{API}/metrics/loss/{stock}")
+        fig, ax = plt.subplots()
+        ax.plot(loss_data.get("loss", []), label="Train Loss")
+        ax.plot(loss_data.get("val_loss", []), label="Val Loss")
+        ax.set_title("Training vs Validation Loss")
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Loss")
+        apply_index_ticks(ax)
+        ax.legend()
+        st.pyplot(fig)
+        st.caption(
+            f"Final train loss: {loss_data.get('final_loss', float('nan')):.6f} | "
+            f"Final val loss: {loss_data.get('final_val_loss', float('nan')):.6f}"
+        )
+    except:
+        st.info("Loss curves not available")
+
+    # Error trend
+    try:
+        error_data = get_json(f"{API}/metrics/error/{stock}")
+        df_err = pd.DataFrame(error_data)
+        fig, ax = plt.subplots()
+        ax.plot(df_err["error"], label="Error (Actual - Predicted)")
+        ax.axhline(0, linestyle="--", linewidth=1)
+        ax.set_title("Prediction Error Trend")
+        ax.set_xlabel("Index")
+        ax.set_ylabel("Error")
+        apply_index_ticks(ax)
+        ax.legend()
+        st.pyplot(fig)
+    except:
+        st.info("Error trend not available")
 
 
 # =====================================================

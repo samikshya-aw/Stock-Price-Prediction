@@ -43,17 +43,23 @@ End-to-end stock prediction project with:
   - Scaler: models/<STOCK>_scaler.pkl
   - Classifier: models/<STOCK>_rf.pkl
   - Metrics: metrics/<STOCK>_roc.json, metrics/<STOCK>_confusion.json, metrics/<STOCK>_regression_curve.json
+  - Metrics: metrics/<STOCK>_loss.json, metrics/<STOCK>_error_trend.json
+  - Metrics: metrics/<STOCK>_regression_metrics.json
+  - Metrics: metrics/<STOCK>_classification_metrics.json, metrics/<STOCK>_classification_report.json
 
 LSTM workflow summary:
-- Close prices -> MinMaxScaler -> sliding window sequences (default window=30).
+- Close prices are cleaned and missing values are imputed.
+- MinMaxScaler -> sliding window sequences (default window=30).
+- Time-ordered train/validation/test split.
 - LSTM predicts next value; inverse transform returns price.
 - Regression curve JSON stores actual vs predicted.
+- Loss curves, regression metrics, and error trend are stored as JSON.
 
 Classifier workflow summary:
 - Feature is last close price (one-step lag).
 - Label is UP (1) if next close is higher; else DOWN (0).
 - Random Forest predicts UP probability.
-- ROC and confusion matrix are stored as JSON.
+- ROC, confusion matrix, and classification report/metrics are stored as JSON.
 
 ### 2) API Service (api.py)
 FastAPI loads all models/scalers once at startup and serves endpoints per stock:
@@ -65,21 +71,26 @@ FastAPI loads all models/scalers once at startup and serves endpoints per stock:
 - GET /metrics/roc/{stock}
 - GET /metrics/confusion/{stock}
 - GET /metrics/regression_curve/{stock}
+- GET /metrics/loss/{stock}
+- GET /metrics/error/{stock}
+- GET /metrics/regression/{stock}
+- GET /metrics/classification/{stock}
+- GET /metrics/classification/report/{stock}
 - GET /forecast/30days/{stock}
   - Serves precomputed forecast if file exists.
 
 ### 3) Streamlit Dashboard (app.py)
 - Calls the API and visualizes results.
 - Tabs:
-  - Classification: prediction, ROC curve, confusion matrix.
-  - Regression: predicted next close vs last actual, curve plot.
+  - Classification: prediction, ROC curve, confusion matrix, metrics, report.
+  - Regression: predicted next close vs last actual, curve plot, loss curves, error trend, metrics.
   - 30-Day Forecast: plot and table (if forecast file exists).
 
 ## Data and Artifact Layout
 
 - data/ - input CSVs (must contain a close column).
 - models/ - trained models and scalers.
-- metrics/ - JSON evaluation outputs for plots.
+- metrics/ - JSON evaluation outputs for plots and tables.
 - scalers/ - currently empty (scalers stored in models/).
 
 ## Packages Used
