@@ -47,6 +47,7 @@ End-to-end stock prediction project with:
   - Metrics: metrics/<STOCK>_regression_metrics.json
   - Metrics: metrics/<STOCK>_classification_metrics.json, metrics/<STOCK>_classification_report.json
   - Metrics: metrics/lstm_table.json
+  - Metrics: metrics/<STOCK>_lstm_cv.json, metrics/<STOCK>_rf_cv.json
 
 LSTM workflow summary:
 - Close prices are cleaned and missing values are imputed.
@@ -55,12 +56,14 @@ LSTM workflow summary:
 - LSTM predicts next value; inverse transform returns price.
 - Regression curve JSON stores actual vs predicted.
 - Loss curves, regression metrics, and error trend are stored as JSON.
+- Optional time-series cross-validation metrics are stored as JSON.
 
 Classifier workflow summary:
 - Feature is last close price (one-step lag).
 - Label is UP (1) if next close is higher; else DOWN (0).
 - Random Forest predicts UP probability.
 - ROC, confusion matrix, and classification report/metrics are stored as JSON.
+- Optional time-series cross-validation metrics are stored as JSON.
 
 ### 2) API Service (api.py)
 FastAPI loads all models/scalers once at startup and serves endpoints per stock:
@@ -87,6 +90,9 @@ FastAPI loads all models/scalers once at startup and serves endpoints per stock:
   - Classification: prediction, ROC curve, confusion matrix, metrics, report.
   - Regression: predicted next close vs last actual, curve plot, loss curves, error trend, metrics, LSTM table.
   - 30-Day Forecast: plot and table (if forecast file exists).
+
+### 4) Cross-Validation Visuals (train.ipynb)
+- The notebook includes CV visualizations for mean metrics per stock and per-fold trends.
 
 ## Data and Artifact Layout
 
