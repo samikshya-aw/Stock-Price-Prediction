@@ -18,6 +18,7 @@ scalers = {}
 rf_models = {}
 
 for stock in STOCKS:
+    print(f"Loading models for {stock}...")
     lstm_models[stock] = load_model(f"models/{stock}_lstm.h5", compile=False)
     scalers[stock] = joblib.load(f"models/{stock}_scaler.pkl")
     rf_models[stock] = joblib.load(f"models/{stock}_rf.pkl")
