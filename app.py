@@ -48,9 +48,8 @@ tab1, tab2, tab3 = st.tabs([
     "🔮 30-Day Forecast"
 ])
 
-# =====================================================
 # CLASSIFICATION TAB
-# =====================================================
+
 with tab1:
     st.subheader(f"Classification Results — {stock}")
 
@@ -116,9 +115,9 @@ with tab1:
         st.info("Classification report not available")
 
 
-# =====================================================
-# REGRESSION TAB
-# =====================================================
+
+#REGRESSION TAB
+
 with tab2:
     st.subheader(f"Regression Results — {stock}")
 
@@ -202,9 +201,9 @@ with tab2:
         st.info("Error trend not available")
 
 
-# =====================================================
+
 # FORECAST TAB
-# =====================================================
+
 with tab3:
     st.subheader(f"30-Day Forecast — {stock}")
 

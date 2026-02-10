@@ -10,9 +10,9 @@ app = FastAPI(title="Stock Prediction API")
 
 STOCKS = ["CGH", "LICN", "NABIL", "NIFRA", "UPPER"]
 
-# -----------------------------
+
 # Load models once
-# -----------------------------
+
 lstm_models = {}
 scalers = {}
 rf_models = {}
@@ -34,18 +34,18 @@ def load_metrics_json(path):
         return json.load(handle)
 
 
-# -----------------------------
+
 # Root endpoint
-# -----------------------------
+
 @app.get("/")
 def root():
     return {"message": "Stock Prediction API is running"}
 
 
-# =====================================================
+
 # REGRESSION — next day prediction
 # matches Streamlit: /predict/regression/{stock}
-# =====================================================
+
 @app.get("/predict/regression/{stock}")
 def predict_regression(stock: str):
     df = pd.read_csv(f"data/{stock}.csv")
@@ -66,10 +66,10 @@ def predict_regression(stock: str):
     }
 
 
-# =====================================================
+
 # CLASSIFICATION — UP/DOWN
 # matches Streamlit: /predict/classification/{stock}
-# =====================================================
+
 @app.get("/predict/classification/{stock}")
 def predict_classification(stock: str):
     df = pd.read_csv(f"data/{stock}.csv")
@@ -85,26 +85,26 @@ def predict_classification(stock: str):
     }
 
 
-# =====================================================
+
 # ROC METRICS
 # notebook saves JSON — not CSV
-# =====================================================
+
 @app.get("/metrics/roc/{stock}")
 def get_roc(stock: str):
     return load_metrics_json(f"metrics/{stock}_roc.json")
 
 
-# =====================================================
+
 # CONFUSION MATRIX
-# =====================================================
+
 @app.get("/metrics/confusion/{stock}")
 def get_confusion(stock: str):
     return load_metrics_json(f"metrics/{stock}_confusion.json")
 
 
-# =====================================================
+
 # REGRESSION CURVE DATA
-# =====================================================
+
 @app.get("/metrics/regression_curve/{stock}")
 def regression_curve(stock: str):
     return load_metrics_json(f"metrics/{stock}_regression_curve.json")
@@ -140,10 +140,9 @@ def lstm_metrics_table():
     return load_metrics_json("metrics/lstm_table.json")
 
 
-# =====================================================
-# OPTIONAL — 30 DAY FORECAST
-# (only works if file exists)
-# =====================================================
+
+# 30 DAY FORECAST
+
 @app.get("/forecast/30days/{stock}")
 def get_30day_forecast(stock: str):
     path = f"models/{stock}_30day_forecast.csv"
